@@ -4,7 +4,68 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>1º CFO PM 2026.2 — Dashboard Executivo</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js">
+// ── Scroll progress bar ──────────────────────────────────────────────────────
+const _prog = document.getElementById('scroll-progress');
+window.addEventListener('scroll', () => {
+  const st = document.documentElement.scrollTop;
+  const dh = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  _prog.style.width = (st / dh * 100) + '%';
+}, { passive: true });
+
+// ── Dark / Light mode ─────────────────────────────────────────────────────────
+let _isDark = true;
+function toggleTheme() {
+  _isDark = !_isDark;
+  document.body.classList.toggle('light', !_isDark);
+  document.getElementById('themeToggle').textContent = _isDark ? '🌙 Tema' : '☀️ Tema';
+  try { localStorage.setItem('cfoDashTheme', _isDark ? 'dark' : 'light'); } catch(e) {}
+}
+try { if (localStorage.getItem('cfoDashTheme') === 'light') toggleTheme(); } catch(e) {}
+
+// ── Platoon filter ────────────────────────────────────────────────────────────
+function filterPelotao(pel, btn) {
+  document.querySelectorAll('.pel-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cards = document.querySelectorAll('.pelotao-card');
+  const ids = ['C','D','E'];
+  cards.forEach((card, i) => {
+    card.classList.remove('dimmed','focused');
+    if (pel !== 'all') {
+      card.classList.add(ids[i] === pel ? 'focused' : 'dimmed');
+    }
+  });
+}
+
+// ── Counter animation for card-value integers ─────────────────────────────────
+document.querySelectorAll('.card-value').forEach(el => {
+  const raw = el.textContent.trim();
+  const n = parseInt(raw);
+  if (!isNaN(n) && n > 1 && n < 10000 && String(n) === raw) {
+    el.dataset.countCard = n;
+    el.textContent = '0';
+  }
+});
+
+const _cObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.querySelectorAll('[data-count-card]').forEach(el => {
+      const target = +el.dataset.countCard, dur = 1200, t0 = performance.now();
+      const tick = now => {
+        const p = Math.min((now-t0)/dur,1), ease = 1-Math.pow(1-p,3);
+        el.textContent = Math.round(ease*target);
+        if (p<1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+    _cObs.unobserve(e.target);
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.cards-grid').forEach(el => _cObs.observe(el));
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
   :root {
     --navy: #050e1f;
@@ -88,7 +149,7 @@
   @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(8px)} }
 
   /* ── SECTIONS ── */
-  section { padding: 5rem 2rem; }
+  section { padding: 3rem 2rem; }
   .section-inner { max-width: 1280px; margin: 0 auto; }
   .section-title {
     font-size: 1.6rem; font-weight: 800; color: var(--white); margin-bottom: .4rem;
@@ -210,9 +271,113 @@
     .pelotao-grid { grid-template-columns: 1fr; }
     nav .nav-links { display: none; }
   }
+
+  /* ── SCROLL PROGRESS BAR ── */
+  #scroll-progress {
+    position: fixed; top: 0; left: 0; height: 3px; z-index: 9999;
+    background: linear-gradient(90deg, var(--gold), var(--gold2));
+    width: 0%; transition: width .08s linear; pointer-events: none;
+  }
+
+  /* ── LIGHT MODE ── */
+  body.light {
+    --navy: #f5f7fb; --navy2: #edf0f8; --navy3: #dde4f2;
+    --white: #111827; --gray3: #4a5878;
+    background: var(--navy2); color: var(--white);
+  }
+  body.light nav { background: rgba(237,240,248,.97); border-bottom-color: rgba(201,162,39,.2); }
+  body.light .hero {
+    background: radial-gradient(ellipse 80% 60% at 50% 0%,rgba(26,95,180,.12) 0%,transparent 70%),
+                linear-gradient(180deg,#edf0f8 0%,#e0e8f5 100%);
+  }
+  body.light .card,
+  body.light .chart-card,
+  body.light .pelotao-card,
+  body.light .blood-item { background: rgba(255,255,255,.9); border-color: rgba(0,0,0,.09); }
+  body.light .bg-alt { background: rgba(0,0,0,.025); }
+  body.light .profile-section { background: linear-gradient(135deg,rgba(201,162,39,.07) 0%,rgba(26,95,180,.07) 100%); }
+  body.light .data-table td { color: #2d3a55; }
+  body.light .data-table th { background: rgba(201,162,39,.1); }
+  body.light .data-table tr:nth-child(even) td { background: rgba(0,0,0,.02); }
+  body.light .hero-intro { background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.08); }
+  body.light .hero-intro p { color: #3a4a6a; }
+  body.light .hero h1 { color: #111827; }
+  body.light .hero-stat .val { color: #1a5fb4; }
+  body.light footer { border-color: rgba(0,0,0,.08); }
+  body.light .nav-links a { color: #4a5878; }
+  body.light .section-title { color: #111827; }
+  body.light .progress-track { background: rgba(0,0,0,.08); }
+  body.light .card-value { color: #111827; }
+
+  /* ── NAV ACTIONS ── */
+  .nav-actions { display: flex; align-items: center; gap: .5rem; }
+  .nav-btn {
+    display: inline-flex; align-items: center; gap: .35rem;
+    background: rgba(201,162,39,.1); border: 1px solid rgba(201,162,39,.25);
+    color: var(--gold2); font-size: .7rem; font-weight: 700; letter-spacing: .05em;
+    padding: .3rem .75rem; border-radius: 2rem; cursor: pointer;
+    transition: background .2s, transform .15s; white-space: nowrap; font-family: inherit;
+  }
+  .nav-btn:hover { background: rgba(201,162,39,.22); transform: translateY(-1px); }
+
+  /* ── PLATOON FILTER ── */
+  .pel-filter { display: flex; align-items: center; gap: .6rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .pel-filter-label { font-size: .72rem; color: var(--gray3); text-transform: uppercase; letter-spacing: .08em; }
+  .pel-btn {
+    padding: .38rem 1.1rem; border-radius: 2rem; font-size: .78rem; font-weight: 700;
+    cursor: pointer; transition: all .2s; border: 1px solid transparent;
+    letter-spacing: .05em; font-family: inherit;
+  }
+  .pel-btn.all { background: rgba(201,162,39,.12); border-color: rgba(201,162,39,.28); color: var(--gold2); }
+  .pel-btn.all.active { background: var(--gold); color: var(--navy); }
+  .pel-btn.c { background: rgba(53,132,228,.12); border-color: rgba(53,132,228,.28); color: #3584e4; }
+  .pel-btn.c.active { background: #3584e4; color: #fff; }
+  .pel-btn.d { background: rgba(38,162,105,.12); border-color: rgba(38,162,105,.28); color: #26a269; }
+  .pel-btn.d.active { background: #26a269; color: #fff; }
+  .pel-btn.e { background: rgba(230,97,0,.12); border-color: rgba(230,97,0,.28); color: #e66100; }
+  .pel-btn.e.active { background: #e66100; color: #fff; }
+
+  .pelotao-card { transition: transform .3s ease, opacity .3s ease, box-shadow .3s ease, border-color .2s !important; }
+  .pelotao-card.dimmed { opacity: .2; transform: scale(.94) !important; pointer-events: none; }
+  .pelotao-card.focused { transform: scale(1.05) !important; box-shadow: 0 12px 40px rgba(0,0,0,.45) !important; }
+
+  /* ── PRINT / PDF ── */
+  @page { margin: 0; }
+
+  @media print {
+    /* Ocultar elementos de navegação/interação */
+    nav, .scroll-cta, .nav-actions, #scroll-progress, .pel-filter { display: none !important; }
+
+    /* Forçar reprodução fiel de cores (fundo escuro) */
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+    /* Manter tema escuro do site; padding compensa margem zero */
+    body { background: #050e1f !important; padding: 1.2cm !important; }
+    .hero { min-height: auto !important; padding: 2rem 1rem !important; }
+
+    /* Garantir que todos os elementos "reveal" apareçam — JS pode não ter disparado */
+    .reveal { opacity: 1 !important; transform: none !important; }
+
+    /* Cada seção começa numa nova página */
+    section { break-before: page !important; }
+
+    /* Evitar quebra de página dentro de blocos importantes */
+    .chart-card { break-inside: avoid !important; page-break-inside: avoid !important; }
+    .cards-grid { break-inside: avoid !important; page-break-inside: avoid !important; }
+    .profile-section { break-inside: avoid !important; page-break-inside: avoid !important; }
+    #pelotao { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; text-align: center !important; }
+    #pelotao .section-inner { width: 100%; max-width: 860px; }
+    section[style*="padding:0"] { display: none !important; }
+
+    /* Corrigir overflow dos gráficos */
+    .chart-wrap { overflow: hidden !important; max-width: 100% !important; }
+    canvas { max-width: 100% !important; }
+  }
+
 </style>
 </head>
 <body>
+<div id="scroll-progress"></div>
 
 <!-- NAV -->
 <nav>
@@ -226,6 +391,10 @@
     <a href="#formacao">Formação</a>
     <a href="#saude">Saúde</a>
     <a href="#pelotao">Pelotão</a>
+  </div>
+  <div class="nav-actions">
+    <button class="nav-btn" id="themeToggle" onclick="toggleTheme()">🌙 Tema</button>
+    <button class="nav-btn" onclick="window.print()">⬇️ PDF</button>
   </div>
 </nav>
 
@@ -326,12 +495,7 @@
     <div class="section-line"></div>
     <p class="section-sub reveal">Tempo de serviço e características operacionais da turma</p>
 
-    <div class="cards-grid cards-4 reveal">
-      <div class="card gold">
-        <div class="card-label">Média Geral</div>
-        <div class="card-value sm">3,12 anos</div>
-        <div class="card-sub">1.141 dias de serviço</div>
-      </div>
+    <div class="cards-grid cards-3 reveal">
       <div class="card green">
         <div class="card-label">Média — Já Incorporados</div>
         <div class="card-value sm">5,80 anos</div>
@@ -501,6 +665,13 @@
     <div class="section-line"></div>
     <p class="section-sub reveal">Distribuição equilibrada entre os três pelotões da turma</p>
 
+        <div class="pel-filter">
+      <span class="pel-filter-label">Filtrar:</span>
+      <button class="pel-btn all active" onclick="filterPelotao('all',this)">Todos</button>
+      <button class="pel-btn c" onclick="filterPelotao('C',this)">Pelotão C</button>
+      <button class="pel-btn d" onclick="filterPelotao('D',this)">Pelotão D</button>
+      <button class="pel-btn e" onclick="filterPelotao('E',this)">Pelotão E</button>
+    </div>
     <div class="pelotao-grid reveal">
       <div class="pelotao-card" style="border-color:rgba(52,132,228,.3)">
         <div class="pelotao-letter" style="color:#3584e4">C</div>
@@ -533,7 +704,6 @@
       <div class="profile-grid">
         <div class="profile-item"><div class="profile-icon">♂</div><div class="profile-val">79,12%</div><div class="profile-lbl">Predominantemente masculino</div></div>
         <div class="profile-item"><div class="profile-icon">🎖️</div><div class="profile-val">54,95%</div><div class="profile-lbl">Já é policial militar</div></div>
-        <div class="profile-item"><div class="profile-icon">⏱️</div><div class="profile-val">3,12 anos</div><div class="profile-lbl">Experiência média geral</div></div>
         <div class="profile-item"><div class="profile-icon">🎓</div><div class="profile-val">45,05%</div><div class="profile-lbl">Possuem nível superior completo</div></div>
         <div class="profile-item"><div class="profile-icon">🏥</div><div class="profile-val">79,12%</div><div class="profile-lbl">Possuem plano de saúde</div></div>
         <div class="profile-item"><div class="profile-icon">📍</div><div class="profile-val">92,31%</div><div class="profile-lbl">Naturais da Bahia</div></div>
@@ -571,6 +741,7 @@
 <script>
 // ── Chart defaults ──────────────────────────────────────────────────────────
 Chart.defaults.color = '#9dafc8';
+Chart.register(ChartDataLabels);
 Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
 const GOLD='#c9a227', GOLD2='#f0c040', BLUE='#3584e4', GREEN='#26a269', ORANGE='#e66100', PINK='#e01b24';
 
@@ -580,7 +751,7 @@ function doughnutOpts(labels, data, colors) {
     data:{ labels, datasets:[{ data, backgroundColor:colors, borderWidth:0, hoverOffset:8 }] },
     options:{
       responsive:true, maintainAspectRatio:false, cutout:'62%',
-      plugins:{ legend:{ position:'bottom', labels:{ padding:14, font:{size:11}, boxWidth:12 } } }
+      plugins:{ legend:{ position:'bottom', labels:{ padding:14, font:{size:11}, boxWidth:12 } }, datalabels:{display:false} }
     }
   };
 }
@@ -613,8 +784,8 @@ new Chart('chartIdade', {
       tooltip:{ callbacks:{ label: ctx => ` ${ctx.raw} alunos (${[37.36,40.66,15.38,6.59][ctx.dataIndex]}%)` } }
     },
     scales:{
-      x:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{font:{size:11}} },
-      y:{ grid:{color:'rgba(255,255,255,.06)'}, ticks:{stepSize:5} }
+      x:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'rgba(255,255,255,.85)',font:{size:12},maxRotation:0} },
+      y:{ grid:{color:'rgba(255,255,255,.06)'}, ticks:{color:'rgba(255,255,255,.85)',stepSize:5} }
     }
   }
 });
@@ -623,7 +794,7 @@ new Chart('chartIdade', {
 new Chart('chartJudicial', {
   type:'bar',
   data:{
-    labels:['Regulares','Sub Judice','Militares','Civis'],
+    labels:[['Regulares','(85)'],['Sub Judice','(6)'],['Militares','(50)'],['Civis','(41)']],
     datasets:[{
       data:[85,6,50,41],
       backgroundColor:['#26a269','#c9a227','#3584e4','#e66100'],
@@ -632,10 +803,10 @@ new Chart('chartJudicial', {
   },
   options:{
     responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{display:false} },
+    plugins:{ legend:{display:false}, datalabels:{display:false} },
     scales:{
-      x:{ grid:{color:'rgba(255,255,255,.04)'} },
-      y:{ grid:{color:'rgba(255,255,255,.06)'} }
+      x:{ grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'rgba(255,255,255,.85)',font:{size:11}} },
+      y:{ grid:{color:'rgba(255,255,255,.06)'}, ticks:{color:'rgba(255,255,255,.85)'} }
     }
   }
 });
@@ -651,10 +822,11 @@ new Chart('chartCidades', {
   },
   options:{
     indexAxis:'y', responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{display:false} },
+    plugins:{ legend:{display:false},
+      datalabels:{ color:'#fff', anchor:'center', align:'center', font:{size:10,weight:'bold'}, formatter:v=>v } },
     scales:{
-      x:{ grid:{color:'rgba(255,255,255,.06)'} },
-      y:{ grid:{display:false}, ticks:{font:{size:10}} }
+      x:{ grid:{color:'rgba(255,255,255,.06)'}, ticks:{color:'rgba(255,255,255,.85)'} },
+      y:{ grid:{display:false}, ticks:{color:'rgba(255,255,255,.85)',font:{size:10}} }
     }
   }
 });
@@ -682,10 +854,11 @@ new Chart('chartSaude', {
   },
   options:{
     responsive:true, maintainAspectRatio:false,
-    plugins:{ legend:{display:false} },
+    plugins:{ legend:{display:false},
+      datalabels:{ color:'#f0c040', anchor:'end', align:'top', offset:4, font:{size:10,weight:'bold'}, formatter:v=>v } },
     scales:{
-      x:{ grid:{display:false}, ticks:{font:{size:10}} },
-      y:{ grid:{color:'rgba(255,255,255,.06)'} }
+      x:{ grid:{display:false}, ticks:{color:'rgba(255,255,255,.85)',font:{size:10}} },
+      y:{ grid:{color:'rgba(255,255,255,.06)'}, ticks:{color:'rgba(255,255,255,.85)'} }
     }
   }
 });
@@ -694,7 +867,7 @@ new Chart('chartSaude', {
 new Chart('chartPelotao', {
   type:'bar',
   data:{
-    labels:['Pelotão C','Pelotão D','Pelotão E'],
+    labels:[['Pelotão C','34,07%'],['Pelotão D','32,97%'],['Pelotão E','32,97%']],
     datasets:[{ data:[31,30,30],
       backgroundColor:['#3584e4','#26a269','#e66100'],
       borderRadius:8, borderSkipped:false }]
@@ -702,11 +875,11 @@ new Chart('chartPelotao', {
   options:{
     responsive:true, maintainAspectRatio:false,
     plugins:{ legend:{display:false},
-      tooltip:{ callbacks:{ label: ctx => ` ${ctx.raw} alunos (${[34.07,32.97,32.97][ctx.dataIndex]}%)` } }
-    },
+      tooltip:{ callbacks:{ label: ctx => ` ${ctx.raw} alunos (${[34.07,32.97,32.97][ctx.dataIndex]}%)` } },
+      datalabels:{ color:'#fff', anchor:'center', align:'center', font:{size:14,weight:'bold'}, formatter:v=>v } },
     scales:{
-      x:{ grid:{display:false} },
-      y:{ grid:{color:'rgba(255,255,255,.06)'}, min:0, max:40 }
+      x:{ grid:{display:false}, ticks:{color:'rgba(255,255,255,.85)',font:{size:12}} },
+      y:{ grid:{color:'rgba(255,255,255,.06)'}, min:0, max:40, ticks:{color:'rgba(255,255,255,.85)'} }
     }
   }
 });
@@ -770,6 +943,81 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 setTimeout(() => {
   document.querySelectorAll('[data-count]').forEach(animateCount);
 }, 400);
+
+// ── Scroll progress bar ──────────────────────────────────────────────────────
+const _prog = document.getElementById('scroll-progress');
+window.addEventListener('scroll', () => {
+  const st = document.documentElement.scrollTop;
+  const dh = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  _prog.style.width = (st / dh * 100) + '%';
+}, { passive: true });
+
+// ── Dark / Light mode ─────────────────────────────────────────────────────────
+let _isDark = true;
+function toggleTheme() {
+  _isDark = !_isDark;
+  document.body.classList.toggle('light', !_isDark);
+  document.getElementById('themeToggle').textContent = _isDark ? '🌙 Tema' : '☀️ Tema';
+  try { localStorage.setItem('cfoDashTheme', _isDark ? 'dark' : 'light'); } catch(e) {}
+}
+try { if (localStorage.getItem('cfoDashTheme') === 'light') toggleTheme(); } catch(e) {}
+
+// ── Platoon filter ────────────────────────────────────────────────────────────
+function filterPelotao(pel, btn) {
+  document.querySelectorAll('.pel-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cards = document.querySelectorAll('.pelotao-card');
+  const ids = ['C','D','E'];
+  cards.forEach((card, i) => {
+    card.classList.remove('dimmed','focused');
+    if (pel !== 'all') {
+      card.classList.add(ids[i] === pel ? 'focused' : 'dimmed');
+    }
+  });
+}
+
+// ── Counter animation for card-value integers ─────────────────────────────────
+document.querySelectorAll('.card-value').forEach(el => {
+  const raw = el.textContent.trim();
+  const n = parseInt(raw);
+  if (!isNaN(n) && n > 1 && n < 10000 && String(n) === raw) {
+    el.dataset.countCard = n;
+    el.textContent = '0';
+  }
+});
+
+const _cObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.querySelectorAll('[data-count-card]').forEach(el => {
+      const target = +el.dataset.countCard, dur = 1200, t0 = performance.now();
+      const tick = now => {
+        const p = Math.min((now-t0)/dur,1), ease = 1-Math.pow(1-p,3);
+        el.textContent = Math.round(ease*target);
+        if (p<1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+    _cObs.unobserve(e.target);
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.reveal').forEach(el => _cObs.observe(el));
+
+// ── Antes de imprimir ───────────────────────────────────────────────────
+window.addEventListener('beforeprint', () => {
+  document.querySelectorAll('[data-count]').forEach(el => {
+    el.textContent = el.dataset.count;
+  });
+  document.querySelectorAll('[data-count-card]').forEach(el => {
+    el.textContent = el.dataset.countCard;
+  });
+  document.querySelectorAll('.progress-fill').forEach(el => {
+    el.style.transition = 'none';
+    el.style.width = el.dataset.w + '%';
+  });
+  document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+});
+
 </script>
 </body>
 </html>
