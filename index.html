@@ -438,18 +438,18 @@ document.querySelectorAll('.cards-grid').forEach(el => _cObs.observe(el));
     <div class="cards-grid cards-4 reveal">
       <div class="card gold">
         <div class="card-label">Efetivo Total</div>
-        <div class="card-value">91</div>
+        <div class="card-value">92</div>
         <div class="card-sub">Candidatos inscritos</div>
       </div>
       <div class="card blue">
         <div class="card-label">Masculino</div>
-        <div class="card-value">72</div>
-        <div class="card-accent gold">79,12% do total</div>
+        <div class="card-value">73</div>
+        <div class="card-accent gold">79,35% do total</div>
       </div>
       <div class="card pink">
         <div class="card-label">Feminino</div>
         <div class="card-value">19</div>
-        <div class="card-accent gold">20,88% do total</div>
+        <div class="card-accent gold">20,65% do total</div>
       </div>
       <div class="card green">
         <div class="card-label">Regulares</div>
@@ -569,7 +569,7 @@ document.querySelectorAll('.cards-grid').forEach(el => _cObs.observe(el));
           <canvas id="chartEstados"></canvas>
         </div>
         <div class="cards-grid cards-2" style="margin-top:1rem">
-          <div class="card blue"><div class="card-label">Bahia (BA)</div><div class="card-value sm">84</div><div class="card-sub">92,31%</div></div>
+          <div class="card blue"><div class="card-label">Bahia (BA)</div><div class="card-value sm">85</div><div class="card-sub">92,39%</div></div>
           <div class="card green"><div class="card-label">Outros estados</div><div class="card-value sm">7</div><div class="card-sub">PE · SE · CE</div></div>
         </div>
       </div>
@@ -758,13 +758,13 @@ function doughnutOpts(labels, data, colors) {
 
 // Sexo
 new Chart('chartSexo', doughnutOpts(
-  ['Masculino (72)','Feminino (19)'], [72,19],
+  ['Masculino (73)','Feminino (19)'], [73,19],
   ['#3584e4','#e01b24']
 ));
 
 // Situação
 new Chart('chartSituacao', doughnutOpts(
-  ['Já Incorporados (50)','Não Incorporados (41)'], [50,41],
+  ['Já Incorporados (50)','Não Incorporados (42)'], [50,42],
   ['#26a269','#e66100']
 ));
 
@@ -815,8 +815,8 @@ new Chart('chartJudicial', {
 new Chart('chartCidades', {
   type:'bar',
   data:{
-    labels:['Salvador','Feira de Santana','Juazeiro','Itabuna','Itaberaba','S. do Bonfim','V. da Conquista','Lapão','L. de Freitas','Demais BA'],
-    datasets:[{ data:[27,20,7,5,2,2,2,2,3,16],
+    labels:['Salvador','Feira de Santana','Juazeiro','Itabuna','L. de Freitas','Itaberaba','S. do Bonfim','V. da Conquista','Lapão','Demais BA'],
+    datasets:[{ data:[27,20,7,5,3,2,2,2,2,16],
       backgroundColor: Array(10).fill(0).map((_,i)=>`hsl(${210+i*8},70%,${55-i*2}%)`),
       borderRadius:4, borderSkipped:false }]
   },
@@ -847,9 +847,9 @@ new Chart('chartEscolaridade', doughnutOpts(
 new Chart('chartSaude', {
   type:'bar',
   data:{
-    labels:['PLANSERV','Não se Aplica','UNIMED','HAPVIDA','FUSEX','GEAP','BRADESCO','SULAMERICA','Outros'],
-    datasets:[{ data:[50,19,9,1,1,1,1,2,8],
-      backgroundColor:['#3584e4','#9dafc8','#26a269','#e66100','#c9a227','#9141ac','#e01b24','#57e389','#1a5fb4'],
+    labels:['PLANSERV','Não se Aplica','UNIMED','SULAMERICA','HAPVIDA','FUSEX','GEAP','BRADESCO','Outros'],
+    datasets:[{ data:[50,19,9,2,1,1,1,1,8],
+      backgroundColor:['#3584e4','#9dafc8','#26a269','#57e389','#e66100','#c9a227','#9141ac','#e01b24','#1a5fb4'],
       borderRadius:6 }]
   },
   options:{
@@ -887,8 +887,8 @@ new Chart('chartPelotao', {
 // ── City table ────────────────────────────────────────────────────────────
 const cities = [
   ['Salvador',27,29.35],['Feira de Santana',20,21.74],['Juazeiro',7,7.61],
-  ['Itabuna',5,5.43],['Itaberaba',2,2.17],['Senhor do Bonfim',2,2.17],
-  ['Vitória da Conquista',2,2.17],['Lapão',2,2.17],['Lauro de Freitas',3,3.26],
+  ['Itabuna',5,5.43],['Lauro de Freitas',3,3.26],['Itaberaba',2,2.17],
+  ['Senhor do Bonfim',2,2.17],['Vitória da Conquista',2,2.17],['Lapão',2,2.17],
   ['Demais cidades da Bahia',16,17.39],['Demais fora da Bahia',7,7.61],
   ['TOTAL',92,100]
 ];
